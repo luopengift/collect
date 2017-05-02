@@ -1,0 +1,25 @@
+{
+    "runtime":{
+        "DEBUG":true,
+        "MAXPROCS":2
+    },
+    "kafka": {
+        "addrs":[
+            "10.10.20.14:9092",
+            "10.10.20.15:9092",
+            "10.10.20.16:9092"
+        ],
+        "topic":"falcon_monitor_us",
+        "maxthreads":100000
+    },
+    "file":[
+        "/data/inveno/HoneyBee/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log",
+        "/data/inveno/HoneyBee_report/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log"
+    ],
+    "prefix":"",
+    "suffix":"",
+    "http": {
+        "addr":":9143"
+    },
+    "tags":"collect"
+}
