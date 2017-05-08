@@ -1,6 +1,6 @@
 {
     "runtime":{
-        "DEBUG":true,
+        "DEBUG":false,
         "MAXPROCS":2
     },
     "kafka": {

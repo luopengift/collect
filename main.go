@@ -1,45 +1,15 @@
-/*
-    collect
-
-###
-配置文件示例(./config.json)
-{
-    "runtime":{
-        "DEBUG":true,
-        "MAXPROCS":2
-    },
-    "kafka": {
-        "addrs":[
-            "10.10.20.14:9092",
-            "10.10.20.15:9092",
-            "10.10.20.16:9092"
-        ],
-        "topic":"falcon_monitor_us",
-        "maxthreads":100000
-    },
-    "file":[
-        "/data/inveno/HoneyBee/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log",
-        "/data/inveno/HoneyBee_report/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log"
-    ],
-    "prefix":"",
-    "suffix":"",
-    "http": {
-        "addr":":9143"
-    },
-    "tags":"collect"
-}
-*/
-
 package main
 
 import (
-	"easyWork/framework/kafka"
 	"encoding/json"
 	"github.com/luopengift/gohttp"
 	"github.com/luopengift/golibs/file"
+	"github.com/luopengift/golibs/kafka"
 	"github.com/luopengift/golibs/logger"
 	"os"
+	"os/signal"
 	"runtime"
+	"runtime/pprof"
 )
 
 var (
@@ -47,7 +17,7 @@ var (
 )
 
 const (
-	VERSION = "0.0.1"
+	VERSION = "0.0.2"
 	APP     = "collect"
 )
 
@@ -119,20 +89,49 @@ func main() {
 		}
 	}()
 
+	//init config
 	config, err := NewConfig()
 	if err != nil {
 		logger.Error("<config error> %v", err)
 	}
 	runtime.GOMAXPROCS(config.Runtime.MAXPROCS)
 
-	p = kafka.NewProducer(config.Kafka.Addrs, config.Kafka.Topic, config.Kafka.MaxThreads)
-	go p.WriteToTopic()
-
+	// http server
 	gohttp.RouterRegister("^/debug$", &Debug{})
 	go gohttp.HttpRun(&gohttp.Config{
 		Addr: config.Http.Addr,
 	})
 
+	//set debug model
+	if config.Runtime.DEBUG {
+
+		//pprof file
+		s := make(chan os.Signal, 1)
+		signal.Notify(s, os.Interrupt, os.Kill)
+		f, err := os.OpenFile("./cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			logger.Error("<file open error> %v", err)
+		}
+		defer f.Close()
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+
+		go func() {
+			select {
+			case sign := <-s:
+				logger.Error("Got signal:", sign)
+				pprof.StopCPUProfile()
+				f.Close()
+				os.Exit(-1)
+			}
+		}()
+	}
+
+	//init kafka producer
+	p = kafka.NewProducer(config.Kafka.Addrs, config.Kafka.Topic, config.Kafka.MaxThreads)
+	go p.WriteToTopic()
+
+	//main loop
 	for _, v := range config.File {
 		logger.Warn("%v", v)
 
@@ -148,5 +147,7 @@ func main() {
 			f.Stop()
 		}(v)
 	}
+
 	select {}
+
 }
