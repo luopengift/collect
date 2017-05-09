@@ -51,21 +51,21 @@ cd collect
 
 2. 编译:
 ```
-./control build
+./init.sh build
 ```
 
 3. 运行:
 ```
-./control start
+./init.sh start
 ```
 
 4. 停止:
 ```
-./control stop
+./init.sh stop
 ```
 
 5. 查看日志:
 ```
-./control tail
+./init.sh tail
 ```
 

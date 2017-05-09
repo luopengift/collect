@@ -1,24 +1,47 @@
 #!/bin/sh
+#
+# collect - this script starts and stops the collect daemon
+#
+# chkconfig:
+# description:
+#               
+# processname: 
+# config:      config.json
+# config:      config.json
+# pidfile:     /var/collect.pid
+
+# Source env
+#. /etc/profile
+
+# Source function library.
+#. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+#. /etc/sysconfig/network
+
 NOW=$(date +%Y-%m-%d.%H:%M:%S)
 echo $NOW
 DIR=$(pwd) #当前目录
-#BASEDIR=$(dirname $(dirname $(dirname $DIR))) 
-#export GOPATH=$BASEDIR
+BASEDIR=$(dirname $(dirname $(dirname $DIR))) 
+export GOPATH=$GOPATH:$BASEDIR
 export GOBIN=$GOPATH/bin/
-echo "GOPATH init Finished."
-echo "GOPATH=$GOPATH"
+echo "GOPATH init Finished. GOPATH=$GOPATH"
+
 #################################
 APP=$(basename $DIR)
 ######创建程序运行临时文件#######
-mkdir -p var
+
+mkdir -p $DIR/var
 PIDFile=$DIR/var/$APP.pid
 LOGFile=$DIR/var/$APP.log
+
 #编译$2,默认$2未指定时编译main.go
 if [ -z $2 ];then #如果$2为空
     main="main"
 else
     main=$2
 fi 
+
 ################################
 function check_PID() {
     if [ -f $PIDFile ];then
@@ -42,8 +65,7 @@ function build() {
 
 function start() {
     check_PID
-    running=$?
-    echo $running
+    local running=$?
     if [ $running -gt 0 ];then
         echo -n "$APP now is running already, PID="
         cat $PIDFile
@@ -62,12 +84,28 @@ function start() {
     fi
 }
 
+function status() {
+    ps -ef |grep $APP|grep -v grep
+    check_PID    
+    local running=$?
+    if [ $running -gt 0 ];then
+        echo -n "$APP now is running already, PID="
+        cat $PIDFile
+        return 1
+    else
+        echo "$APP is stopped..."
+        return 1
+    fi
+    
+}
+
+
 function debug() {
     go run $1.go
 }
 
 function stop() {
-    PID=$(cat $PIDFile)
+    local PID=$(cat $PIDFile)
     kill $PID
     rm -f $PIDFile
     echo "$APP stoped..."
