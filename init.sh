@@ -117,6 +117,10 @@ function restart() {
     start   
 }
 
+function pack() {
+    tar -cvf $APP.tar.gz $APP config.json init.sh
+}
+
 function tailf() {
    tail -f $LOGFile
 }
@@ -125,34 +129,54 @@ function help() {
     echo "$0 build|start|stop|kill|restart|reload|run|tail|docs|sslkey"
 }
 
-if [ "$1" == "" ]; then
-    help
-elif [ "$1" == "build" ];then
-    build $main
-elif [ "$1" == "start" ];then
-    start
-elif [ "$1" == "debug" ];then
-    debug $main
-elif [ "$1" == "stop" ];then
-    stop
-elif [ "$1" == "kill" ];then
-    killall
-elif [ "$1" == "restart" ];then
-    restart
-elif [ "$1" == "reload" ];then
-    reload
-elif [ "$1" == "status" ];then
-    status
-elif [ "$1" == "run" ];then
-    run 
-elif [ "$1" == "tail" ];then
-    tailf
-elif [ "$1" == "docs" ];then
-    docs
-elif [ "$1" == "sslkey" ];then
-    sslkey
-else
-    help
-fi
+
+case "$1"  in
+    build)
+        build $main
+        ;;
+    start)
+        start
+        ;;
+    debug)
+        debug $main
+        ;;
+    stop)
+        stop
+        ;;
+    kill)
+        killall
+        ;;
+    restart)
+        restart
+        ;;
+    reload)
+        reload
+        ;;
+    status)
+        status
+        ;;
+    run)
+        run
+        ;;
+    pack)
+        pack
+        ;;
+    tail)
+        tailf
+        ;;
+    docs)
+        docs
+        ;;
+    sslkey)
+        sslkey
+        ;;
+    *)
+        help
+        ;;
+esac
+
+
+
+
 #bee api  cmdb-api -driver=mysql -conn="root:root888@tcp(127.0.0.1:3306)/cmdb"
 

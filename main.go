@@ -17,7 +17,7 @@ var (
 )
 
 const (
-	VERSION = "0.0.2"
+	VERSION = "2017.05.10-0.0.3"
 	APP     = "collect"
 )
 
@@ -44,10 +44,11 @@ type Config struct {
 	Suffix  string   `json:"suffix"`
 	Http    HttpConfig
 	Tags    string `json:"tags"`
+	Version string `json:version`
 }
 
-func NewConfig() (*Config, error) {
-	conf, err := file.NewFile("./config.json", os.O_RDONLY).ReadAll()
+func NewConfig(filename string) (*Config, error) {
+	conf, err := file.NewFile(filename, os.O_RDONLY).ReadAll()
 	if err != nil {
 		return nil, err
 	}
@@ -68,15 +69,15 @@ func NewConfig() (*Config, error) {
 		}
 	}
 
-	logger.Info("%v", config)
+	logger.Info("%+v", config)
 	return config, err
 }
 
-type Debug struct {
+type Monitor struct {
 	gohttp.HttpHandler
 }
 
-func (self *Debug) GET() {
+func (self *Monitor) GET() {
 	self.Output(p.QueueInfo())
 }
 
@@ -90,19 +91,25 @@ func main() {
 	}()
 
 	//init config
-	config, err := NewConfig()
+	config, err := NewConfig("./config.json")
 	if err != nil {
 		logger.Error("<config error> %v", err)
 	}
+
+	if VERSION != config.Version {
+		logger.Error("The version of app and config is not match!exit...")
+		return
+	}
+
 	runtime.GOMAXPROCS(config.Runtime.MAXPROCS)
 
 	// http server
-	gohttp.RouterRegister("^/debug$", &Debug{})
+	gohttp.RouterRegister("^/monitor$", &Monitor{})
 	go gohttp.HttpRun(&gohttp.Config{
 		Addr: config.Http.Addr,
 	})
 
-	//set debug model
+	//set debug cpu model
 	if config.Runtime.DEBUG {
 
 		//pprof file

@@ -21,5 +21,6 @@
     "http": {
         "addr":":9143"
     },
-    "tags":"collect"
+    "tags":"collect",
+    "version":"2017.05.10-0.0.3"
 }
