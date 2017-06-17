@@ -1,15 +1,17 @@
 package main
 
 import (
-	"encoding/json"
 	"github.com/luopengift/gohttp"
 	"github.com/luopengift/golibs/file"
 	"github.com/luopengift/golibs/kafka"
 	"github.com/luopengift/golibs/logger"
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
+	"time"
 )
 
 var (
@@ -17,7 +19,7 @@ var (
 )
 
 const (
-	VERSION = "2017.05.10-0.0.3"
+	VERSION = "2017.06.15-0.0.1"
 	APP     = "collect"
 )
 
@@ -32,6 +34,13 @@ type KafkaConfig struct {
 	MaxThreads int64    `json:"maxthreads"`
 }
 
+type FileConfig struct {
+	Name   []string `json:name`
+	Offset int64    `json:offset`
+	Prefix string   `json:"prefix"`
+	Suffix string   `json:"suffix"`
+}
+
 type HttpConfig struct {
 	Addr string `json:"addr"`
 }
@@ -39,37 +48,19 @@ type HttpConfig struct {
 type Config struct {
 	Runtime RuntimeConfig
 	Kafka   KafkaConfig
-	File    []string `json:"file"`
-	Prefix  string   `json:"prefix"`
-	Suffix  string   `json:"suffix"`
+	File    FileConfig
 	Http    HttpConfig
 	Tags    string `json:"tags"`
 	Version string `json:version`
 }
 
 func NewConfig(filename string) (*Config, error) {
-	conf, err := file.NewFile(filename, os.O_RDONLY).ReadAll()
-	if err != nil {
-		return nil, err
-	}
-	logger.Info("%v", string(conf))
+
 	config := &Config{}
+	conf := file.NewConfig("./config.json")
+	err := conf.Parse(config)
 
-	err = json.Unmarshal(conf, config)
-	if err != nil {
-		return nil, err
-	}
-
-	if config.Runtime.MAXPROCS == 0 {
-		if config.Runtime.DEBUG {
-			config.Runtime.MAXPROCS = 1
-
-		} else {
-			config.Runtime.MAXPROCS = runtime.NumCPU()
-		}
-	}
-
-	logger.Info("%+v", config)
+	logger.Info("%+v", conf.String())
 	return config, err
 }
 
@@ -78,7 +69,7 @@ type Monitor struct {
 }
 
 func (self *Monitor) GET() {
-	self.Output(p.QueueInfo())
+	self.Output(p.ChanInfo())
 }
 
 func main() {
@@ -93,12 +84,22 @@ func main() {
 	//init config
 	config, err := NewConfig("./config.json")
 	if err != nil {
-		logger.Error("<config error> %v", err)
+		logger.Error("<config error> %+v", err)
+		return
 	}
 
 	if VERSION != config.Version {
 		logger.Error("The version of app and config is not match!exit...")
 		return
+	}
+
+	if config.Runtime.MAXPROCS == 0 {
+		if config.Runtime.DEBUG {
+			config.Runtime.MAXPROCS = 1
+
+		} else {
+			config.Runtime.MAXPROCS = runtime.NumCPU()
+		}
 	}
 
 	runtime.GOMAXPROCS(config.Runtime.MAXPROCS)
@@ -139,22 +140,35 @@ func main() {
 	go p.WriteToTopic()
 
 	//main loop
-	for _, v := range config.File {
+	for _, v := range config.File.Name {
 		logger.Warn("%v", v)
 
 		go func(v string) {
 			f := file.NewTail(v)
-			f.ReadLine()
+			f.Seek(config.File.Offset)
+			//开启groutine,定时刷新offset文件
+			go func() {
+				for {
+					select {
+					case <-time.After(60 * time.Second):
+						str := strconv.FormatInt(f.Offset(), 10) + "\n"
+						err := ioutil.WriteFile("var/"+f.BaseName()+".offset", []byte(str), 0666)
+						if err != nil {
+							logger.Error("<write offset file error:%+v>", err)
+						}
+					}
+				}
+			}()
 
+			f.ReadLine()
 			for value := range f.NextLine() {
-				p.Write([]byte(config.Prefix + *value + config.Suffix))
-				//ret, err := p.Write([]byte(config.Prefix + *value + config.Suffix))
-				//logger.Info("%v,%v", ret, err)
+				p.Write([]byte(config.File.Prefix + *value + config.File.Suffix))
+				//	ret, err := p.Write([]byte(config.File.Prefix + *value + config.File.Suffix))
+				//	logger.Debug("%v, %v, %v", *value, ret, err, f.Offset())
 			}
 			f.Stop()
 		}(v)
 	}
-
+	logger.Info("APP=%s VERSION=%s, running success.", APP, VERSION)
 	select {}
-
 }

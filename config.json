@@ -9,18 +9,23 @@
             "10.10.20.15:9092",
             "10.10.20.16:9092"
         ],
-        "topic":"falcon_monitor_us",
+        #"topic":"falcon_monitor_us",
+        "topic":"test",
         "maxthreads":100000
     },
-    "file":[
-        "/data/inveno/HoneyBee/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log",
-        "/data/inveno/HoneyBee_report/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log"
-    ],
-    "prefix":"",
-    "suffix":"",
+    "file":{
+        "name":[
+        #"/data/inveno/HoneyBee/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log", #honeybee
+        #"/data/inveno/HoneyBee_report/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log"
+        ],
+        #offset:0从头开始读取数据,num(int64)从指定行开始读取数据
+        "offset":10,
+        "prefix":"",
+        "suffix":""
+    },
     "http": {
         "addr":":9143"
     },
     "tags":"collect",
-    "version":"2017.05.10-0.0.3"
+    "version":"2017.06.15-0.0.1"
 }

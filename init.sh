@@ -131,48 +131,20 @@ function help() {
 
 
 case "$1"  in
-    build)
-        build $main
-        ;;
-    start)
-        start
-        ;;
-    debug)
-        debug $main
-        ;;
-    stop)
-        stop
-        ;;
-    kill)
-        killall
-        ;;
-    restart)
-        restart
-        ;;
-    reload)
-        reload
-        ;;
-    status)
-        status
-        ;;
-    run)
-        run
-        ;;
-    pack)
-        pack
-        ;;
-    tail)
-        tailf
-        ;;
-    docs)
-        docs
-        ;;
-    sslkey)
-        sslkey
-        ;;
-    *)
-        help
-        ;;
+    build) build $main ;;
+    start) start ;;
+    debug) debug $main ;;
+    stop) stop ;;
+    kill) killall ;;
+    restart) restart ;;
+    reload) reload ;;
+    status) status ;;
+    run) run ;;
+    pack) pack ;;
+    tail) tailf ;;
+    docs) docs ;;
+    sslkey) sslkey ;;
+    *) help ;;
 esac
 
 
