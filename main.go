@@ -19,7 +19,7 @@ var (
 )
 
 const (
-	VERSION = "2017.07.06-0.0.1"
+	VERSION = "2017.07.06-0.0.3"
 	APP     = "collect"
 )
 
