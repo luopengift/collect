@@ -19,7 +19,7 @@ var (
 )
 
 const (
-	VERSION = "2017.06.15-0.0.1"
+	VERSION = "2017.07.06-0.0.1"
 	APP     = "collect"
 )
 
@@ -105,10 +105,9 @@ func main() {
 	runtime.GOMAXPROCS(config.Runtime.MAXPROCS)
 
 	// http server
-	gohttp.RouterRegister("^/monitor$", &Monitor{})
-	go gohttp.HttpRun(&gohttp.Config{
-		Addr: config.Http.Addr,
-	})
+	app := gohttp.Init()
+	app.Route("^/monitor$", &Monitor{})
+	go app.Run(config.Http.Addr)
 
 	//set debug cpu model
 	if config.Runtime.DEBUG {
