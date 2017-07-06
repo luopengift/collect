@@ -43,7 +43,8 @@
 03. kafka.addrs: kafka地址
 04. kafka.topic: kafka topic
 05. kafka.maxthreads: 并发协程写kafka topic的数量,根据需要调整(本人测试可以开到100w,机型aws[t2.xlarge])
-06. file.name: 收集文件列表,支持按时间格式匹配,注意:文件名中不能包含数字.(详情:https://github.com/luopengift/golibs/tree/master/file)
+06. file.name: 收集文件列表,支持按时间格式匹配.
+08. file.rule: 文件格式处理规则,"null":不做任何处理,保留原格式."time":按时间格式匹配,注意:文件名中不能包含数字.(详情:https://github.com/luopengift/golibs/tree/master/file)
 07. file.offset: 文件起始读取位置(bytes),默认每分钟将offset值记录在"var/{{file.mame}}.offset"中
 08. file.prefix/suffix: 字符串需要拼接的前后缀,默认为空("")时不做任何处理
 09. http.addr: HTTP监控接口(http://http.addr/monitor)

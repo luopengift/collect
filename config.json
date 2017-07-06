@@ -16,8 +16,9 @@
     "file":{
         "name":[
         #"/data/inveno/HoneyBee/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log", #honeybee
-        #"/data/inveno/HoneyBee_report/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log"
+        "/data/inveno/HoneyBee_report/INV/honeybee/INV.honeybee_monitor_%Y%M%D.log"
         ],
+        "rule":"time",
         #offset:0从头开始读取数据,num(int64)从指定行开始读取数据
         "offset":10,
         "prefix":"",

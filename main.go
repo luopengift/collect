@@ -37,6 +37,7 @@ type KafkaConfig struct {
 type FileConfig struct {
 	Name   []string `json:name`
 	Offset int64    `json:offset`
+	Rule   string   `json:"rule"`
 	Prefix string   `json:"prefix"`
 	Suffix string   `json:"suffix"`
 }
@@ -143,7 +144,13 @@ func main() {
 		logger.Warn("%v", v)
 
 		go func(v string) {
-			f := file.NewTail(v)
+			var f *file.Tail
+			switch config.File.Rule {
+			case "time":
+				f = file.NewTail(v, file.TimeRule)
+			default:
+				f = file.NewTail(v, file.NullRule)
+			}
 			f.Seek(config.File.Offset)
 			//开启groutine,定时刷新offset文件
 			go func() {
