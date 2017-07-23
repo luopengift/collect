@@ -19,7 +19,7 @@ var (
 )
 
 const (
-	VERSION = "2017.07.06-0.0.3"
+	VERSION = "2017.07.23-0.0.2"
 	APP     = "collect"
 )
 
@@ -37,7 +37,6 @@ type KafkaConfig struct {
 type FileConfig struct {
 	Name   []string `json:name`
 	Offset int64    `json:offset`
-	Rule   string   `json:"rule"`
 	Prefix string   `json:"prefix"`
 	Suffix string   `json:"suffix"`
 }
@@ -144,13 +143,7 @@ func main() {
 		logger.Warn("%v", v)
 
 		go func(v string) {
-			var f *file.Tail
-			switch config.File.Rule {
-			case "time":
-				f = file.NewTail(v, file.TimeRule)
-			default:
-				f = file.NewTail(v, file.NullRule)
-			}
+			f := file.NewTail(v, file.TimeRule)
 			f.Seek(config.File.Offset)
 			//开启groutine,定时刷新offset文件
 			go func() {
