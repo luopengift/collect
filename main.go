@@ -19,7 +19,7 @@ var (
 )
 
 const (
-	VERSION = "2017.07.23-0.0.2"
+	VERSION = "2017.08.07-0.0.1"
 	APP     = "collect"
 )
 
@@ -31,7 +31,7 @@ type RuntimeConfig struct {
 type KafkaConfig struct {
 	Addrs      []string `json:"addrs"`
 	Topic      string   `json:"topic"`
-	MaxThreads int64    `json:"maxthreads"`
+	MaxThreads int      `json:"maxthreads"`
 }
 
 type FileConfig struct {
