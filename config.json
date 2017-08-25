@@ -10,7 +10,7 @@
             "10.10.20.16:9092"
         ],
         #"topic":"zhizi-log",
-        #"topic":"lp_test",
+        "topic":"lp_test",
         "maxthreads":100000
     },
     "file":{
@@ -29,5 +29,5 @@
         "addr":":9191"
     },
     "tags":"collect",
-    "version":"2017.08.07-0.0.1"
+    "version":"2017.08.25-0.0.1"
 }

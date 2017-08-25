@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"github.com/luopengift/gohttp"
 	"github.com/luopengift/golibs/file"
 	"github.com/luopengift/golibs/kafka"
@@ -19,7 +20,7 @@ var (
 )
 
 const (
-	VERSION = "2017.08.07-0.0.1"
+	VERSION = "2017.08.25-0.0.1"
 	APP     = "collect"
 )
 
@@ -161,7 +162,11 @@ func main() {
 
 			f.ReadLine()
 			for value := range f.NextLine() {
-				p.Write([]byte(config.File.Prefix + *value + config.File.Suffix))
+				var buf bytes.Buffer
+				buf.WriteString(config.File.Prefix)
+				buf.Write(value)
+				buf.WriteString(config.File.Suffix)
+				p.Write(buf.Bytes())
 				//	ret, err := p.Write([]byte(config.File.Prefix + *value + config.File.Suffix))
 				//	logger.Debug("%v, %v, %v", *value, ret, err, f.Offset())
 			}
